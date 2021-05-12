@@ -17,9 +17,11 @@ public class main extends ListenerAdapter {
 
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
-        String message = event.getMessage().getContentRaw().toLowerCase().substring(prefix.length());
-        if (!message.startsWith(prefix))
+        if (!event.getMessage().getContentRaw().toLowerCase().startsWith(prefix)) {
             return;
+        }
+
+        String message = event.getMessage().getContentRaw().toLowerCase().substring(prefix.length());
 
         EmbedBuilder eb = new EmbedBuilder();
 
