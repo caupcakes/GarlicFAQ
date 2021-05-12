@@ -5,15 +5,61 @@ import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.GatewayIntent;
+import org.json.JSONObject;
 
+import javax.imageio.ImageIO;
 import javax.security.auth.login.LoginException;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class main extends ListenerAdapter {
     static JDA jda;
     static String prefix = "!";
+
+
+    static String priceinusd;
+    static int usdchange;
+
+    static String priceinbtc;
+    static int btcchange;
+
+    static String volumegrlc;
+    static int volumechange;
+
+    static String volumeinusd;
+    static int changeinvolumeusd;
+
+    static String volumeinbtc;
+    static double changeinvolumebtc;
+
+    /*/
+    if you know how to format these static variables please do
+     */
+
     public static void main(String[] args) throws LoginException {
-        jda = JDABuilder.createDefault("your token here").enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES).setActivity(Activity.watching("!help")).addEventListeners(new main()).build();
-    } // make sure your intents are enabled on discord developer if the bot is not working. Intents are enabled just in case this data is needed.
+        jda = JDABuilder.createDefault("your token here")
+            .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES)
+            .setActivity(Activity.watching("!help"))
+            .addEventListeners(new main()).build();
+        
+        ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+        executorService.scheduleAtFixedRate(() -> {
+            try {
+                updateprice();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }, 0, 15, TimeUnit.SECONDS);
+    }
 
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
@@ -26,6 +72,9 @@ public class main extends ListenerAdapter {
         EmbedBuilder eb = new EmbedBuilder();
 
         switch (message) {
+            case "price":
+                price(event);
+                break;
             case "help":
                 eb.setTitle("Help");
                 eb.setDescription("I am a meaningful and well architected FAQ Bot hosted on some person’s computer.\n" +
@@ -115,7 +164,45 @@ public class main extends ListenerAdapter {
                 break;
         }
 
+        eb.setColor(new Color(242, 201, 76));
         event.getMessage().reply(eb.build()).mentionRepliedUser(false).queue();
+    }
+
+    static void price(GuildMessageReceivedEvent event) {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("Prices of Garlicoin");
+        eb.setDescription("**Average price (24hr)**\nUSD: $" + priceinusd + " (" + usdchange + "%)\nBTC: " + priceinbtc + " (" + btcchange + "%)" +
+                "\n\n\n" +
+                "**Volume (24hr)**\nGRLC: " + volumegrlc + " (" + volumechange + "%)\nUSD: $" + volumeinusd + " (" + changeinvolumeusd + "%)\nBTC: " + volumeinbtc + " (" + changeinvolumebtc + "%)");
+        if (usdchange > 0){
+            eb.setColor(new Color(92, 212, 36));
+        } else if (usdchange < 0){
+            eb.setColor(new Color(212, 48, 36));
+        }
+
+        event.getMessage().reply(eb.build()).mentionRepliedUser(false).queue();
+    }
+
+    static void updateprice() throws IOException {
+        HttpURLConnection url = (HttpURLConnection) new URL("https://www.garlicwatch.com/api/summary").openConnection();
+        BufferedReader br = new BufferedReader(new InputStreamReader(url.getInputStream()));
+        String in = br.readLine();
+
+        JSONObject obj = new JSONObject(in);
+        priceinusd = obj.getString("last");
+        usdchange = obj.getInt("last_change");
+
+        priceinbtc = obj.getString("last_btc");
+        btcchange = obj.getInt("last_btc_change");
+
+        volumegrlc = obj.getString("volume24h");
+        volumechange = obj.getInt("volume_change");
+
+        volumeinusd = obj.getString("volume24h_usd");
+        changeinvolumeusd = obj.getInt("volume_usd_change");
+
+        volumeinbtc = obj.getString("volume24h_btc");
+        changeinvolumebtc = obj.getInt("volume_btc_change");
     }
 
     static void bork(GuildMessageReceivedEvent event) throws IOException {
