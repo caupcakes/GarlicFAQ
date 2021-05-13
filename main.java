@@ -41,6 +41,10 @@ public class main extends ListenerAdapter {
     static String volumeinbtc;
     static int changeinvolumebtc;
 
+    static String marketcapinbtc;
+    static String marketcapinusd;
+    static String supply;
+
     /*/
     if you know how to format these static variables please do
      */
@@ -49,13 +53,14 @@ public class main extends ListenerAdapter {
         jda = JDABuilder.createDefault("your token here")
             .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES)
             .setActivity(Activity.watching("!help"))
-            .addEventListeners(new main()).build();
+            .addEventListeners(new main())
+            .build();
         
-       
         ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
         executorService.scheduleAtFixedRate(() -> {
             try {
                 updateprice();
+                updatemarketcap();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -145,26 +150,50 @@ public class main extends ListenerAdapter {
             case "mining":
             case "mine":
             case "howtomine":
-                eb.setDescription("All you need to mine is a GPU/CPU and electricity! Mining is when XYZ.\n\n[Read more](https://garlic.wiki/index.php/How_To_Mine)");
+                eb.setDescription("All you need to mine are a GPU/CPU and electricity! Mining is the process of minting/creating new Garlicoins out of thin air by running the Allium algorithm on your computer." +
+                        "\n\n[AMD](https://github.com/fancyIX/sgminer-phi2-branch)**!amd**" +
+                        "\n[NVIDIA](https://github.com/lenis0012/ccminer)**!nvidia**" +
+                        "\n[CPU](https://github.com/JayDDee/cpuminer-opt)**!cpu**" +
+                        "\n\n[Read more](https://garlic.wiki/index.php/How_To_Mine)");
                 break;
 
             case "instant":
             case "dailypayout":
             case "daily":
             case "instantpayout":
-                eb.setDescription("Instant payout is evil.  Do not use it if you love garlic.");
+                eb.setDescription("Instant payout is evil.  Do not use it if you love garlic.\n\n[Read more](https://garlic.wiki/index.php/FreshGrlc_Instant_Payout_vs_Daily_Payout)");
                 break;
 
             case "garlium":
-                eb.setDescription("Garlium is a wallet that does not require downloading the entire blockchain, because a server monitors the blockchain on your behalf.");
+                eb.setDescription("Garlium is a wallet that does not require downloading the entire blockchain, because a server monitors the blockchain on your behalf. If you are having issues, try a new server and restart Garlium.  If you use Garlium for a mining wallet, it will eventually crash and not sync.\n\nhttps://xske.github.io/garlium/ ");
                 break;
 
             case "core":
-                eb.setDescription("Garlicoin core is the safest online wallet because it downloads the entire blockchain (8-10 GB is required to use).");
+                eb.setDescription("Garlicoin core is the safest online wallet because it downloads the entire blockchain (8-10 GB is required to use).\n\nhttps://garlicoin.io/downloads/");
                 break;
 
             case "coresync":
                 eb.setDescription("`./garlicoin-cli addnode freshgrlc.net onetry` or run `addnode freshgrlc.net onetry` in the console ");
+                break;
+
+            case "amd":
+                eb.setTitle("Mining with AMD");
+                eb.setDescription("https://github.com/fancyIX/sgminer-phi2-branch");
+                break;
+
+            case "nvidia":
+                eb.setTitle("Mining with Nvidia");
+                eb.setDescription("https://github.com/lenis0012/ccminer");
+                break;
+
+            case "cpu":
+                eb.setTitle("Mining with CPU");
+                eb.setDescription("https://github.com/JayDDee/cpuminer-opt");
+                break;
+
+            case "webwallet":
+                eb.setDescription("The Garlicoin web wallet is [here](https://grlc.eu/!w/)\n" +
+                        "It requires a single password.");
                 break;
 
             case "bork":
@@ -185,7 +214,8 @@ public class main extends ListenerAdapter {
         eb.setTitle("Prices of Garlicoin");
         eb.setDescription("**Average price (24hr)**\nUSD: $" + priceinusd + " (" + usdchange + "%)\nBTC: " + priceinbtc + " (" + btcchange + "%)" +
                 "\n\n\n" +
-                "**Volume (24hr)**\nGRLC: " + volumegrlc + " :garlic: (" + volumechange + "%)\nUSD: $" + volumeinusd + " (" + changeinvolumeusd + "%)\nBTC: " + volumeinbtc + " (" + changeinvolumebtc + "%)");
+                "**Volume (24hr)**\nGRLC: " + volumegrlc + " :garlic: (" + volumechange + "%)\nUSD: $" + volumeinusd + " (" + changeinvolumeusd + "%)\nBTC: " + volumeinbtc + " (" + changeinvolumebtc + "%)" +
+                "\n\n\n**Market cap**\nGRLC: " + supply + " :garlic:\nUSD: $" + marketcapinusd + "\nBTC: " + marketcapinbtc);
         if (usdchange > 0) {
             eb.setColor(new Color(92, 212, 36));
         } else if (usdchange < 0) {
@@ -215,6 +245,17 @@ public class main extends ListenerAdapter {
 
         volumeinbtc = obj.getString("volume24h_btc");
         changeinvolumebtc = obj.getInt("volume_btc_change");
+    }
+
+    static void updatemarketcap() throws IOException {
+        HttpURLConnection url = (HttpURLConnection) new URL("https://www.garlicwatch.com/api/stats").openConnection();
+        BufferedReader br = new BufferedReader(new InputStreamReader(url.getInputStream()));
+        String in = br.readLine();
+
+        JSONObject obj = new JSONObject(in.replace("[", "").replace("]", ""));
+        marketcapinbtc = obj.getString("mark_cap_btc");
+        marketcapinusd = obj.getString("mark_cap_usd");
+        supply = obj.getString("supply_form");
     }
 
     static void bork(GuildMessageReceivedEvent event) throws IOException {
