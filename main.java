@@ -254,6 +254,26 @@ public class main extends ListenerAdapter {
 
         volumeinbtc = obj.getString("volume24h_btc");
         changeinvolumebtc = obj.getInt("volume_btc_change");
+
+        ChromeOptions chromeOptions = new ChromeOptions();
+        chromeOptions.addArguments("--headless");
+        chromeOptions.addArguments("--disable-gpu");
+        chromeOptions.addArguments("--window-size=2560,1440");
+
+
+        ChromeDriver driver = new ChromeDriver(chromeOptions);
+        WebDriverWait webDriverWait = new WebDriverWait(driver, 5);
+        driver.get("https://www.garlicwatch.com/");
+
+        webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("/html/body/div/div/div[2]/div/div[1]/div/div[2]/div/div/div[1]/div[2]/canvas")));
+
+        File screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+        FileUtils.copyFile(screenshot, new File("D:\\grlcfaq\\src\\main\\java\\garlicwatch.png"));
+        BufferedImage imgscr = ImageIO.read(new File("D:\\grlcfaq\\src\\main\\java\\garlicwatch.png"));
+        ImageIO.write(imgscr.getSubimage(16, 176, (1515 - 16), (662 - 176)), "png", new File("D:\\grlcfaq\\src\\main\\java\\chart.png"));
+
+
+        driver.close();
     }
 
     static void updatemarketcap() throws IOException {
