@@ -231,7 +231,13 @@ public class main extends ListenerAdapter {
             eb.setColor(new Color(212, 48, 36));
         }
 
-        event.getMessage().reply(eb.build()).mentionRepliedUser(false).queue();
+        jda.retrieveUserById(424761268419952641L).complete().openPrivateChannel().queue((TextChannel) -> {
+            TextChannel.sendFile(new File("D:\\grlcfaq\\src\\main\\java\\chart.png")).queue((Message) -> {
+                eb.setImage(Message.getAttachments().get(0).getProxyUrl());
+                event.getMessage().reply(eb.build()).mentionRepliedUser(false).queue();
+            });
+        });
+
     }
 
     static void updateprice() throws IOException {
@@ -304,7 +310,6 @@ public class main extends ListenerAdapter {
     }
 
 
-
     static void meme(GuildMessageReceivedEvent event) throws IOException {
         // GET - get_memes
         HttpURLConnection url1 = (HttpURLConnection) new URL("https://api.imgflip.com/get_memes/").openConnection();
@@ -323,26 +328,18 @@ public class main extends ListenerAdapter {
         String setup = obj2.getString("setup");
         String punchline = obj2.getString("punchline");
 
-        // GET - get_joke
-        HttpURLConnection url1 = (HttpURLConnection) new URL("https://official-joke-api.appspot.com/random_joke").openConnection();
-        BufferedReader br = new BufferedReader(new InputStreamReader(url1.getInputStream()));
-        String in = br.readLine();
-
-        JSONObject obj = new JSONObject(in);
-        String setup = obj.getString("setup");
-        String punchline = obj.getString("punchline");
 
         //POST - caption_image
         URL url3 = new URL("https://api.imgflip.com/caption_image");
-        Map<String,Object> params = new LinkedHashMap<>();
-        params.put("template_id", memes.getJSONObject(Math.floor(Math.random() * memes.length())).getString("id"));
+        Map<String, Object> params = new LinkedHashMap<>();
+        params.put("template_id", memes.getJSONObject((int) Math.floor(Math.random() * memes.length())).getString("id"));
         params.put("username", "whalegoddess");
         params.put("password", "garlicoinmemes");
         params.put("text0", setup);
         params.put("text1", punchline);
 
         StringBuilder postData = new StringBuilder();
-        for (Map.Entry<String,Object> param : params.entrySet()) {
+        for (Map.Entry<String, Object> param : params.entrySet()) {
             if (postData.length() != 0) postData.append('&');
             postData.append(URLEncoder.encode(param.getKey(), "UTF-8"));
             postData.append('=');
@@ -350,14 +347,14 @@ public class main extends ListenerAdapter {
         }
         byte[] postDataBytes = postData.toString().getBytes(StandardCharsets.UTF_8);
 
-        HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+        HttpURLConnection conn = (HttpURLConnection) url3.openConnection();
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
         conn.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
         conn.setDoOutput(true);
         conn.getOutputStream().write(postDataBytes);
 
-        BufferedReader outputreader =  new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        BufferedReader outputreader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 
 
         JSONObject finalJSONOutput = new JSONObject(outputreader.readLine()).getJSONObject("data");
@@ -382,36 +379,18 @@ public class main extends ListenerAdapter {
         }
     }
 
-    static BufferedImage overlayImages(BufferedImage bgImage,
-                                       BufferedImage fgImage) {
+    static BufferedImage overlayImages(BufferedImage bgImage, BufferedImage fgImage) {
 
-        /**
-         * Doing some preliminary validations.
-         * Foreground image height cannot be greater than background image height.
-         * Foreground image width cannot be greater than background image width.
-         *
-         * returning a null value if such condition exists.
-         */
         if (fgImage.getHeight() > bgImage.getHeight()
                 || fgImage.getWidth() > fgImage.getWidth()) {
             return null;
         }
 
-        /**Create a Graphics  from the background image**/
         Graphics2D g = bgImage.createGraphics();
-        /**Set Antialias Rendering**/
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON);
-        /**
-         * Draw background image at location (0,0)
-         * You can change the (x,y) value as required
-         */
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.drawImage(bgImage, 0, 0, null);
 
-        /**
-         * Draw foreground image at location (0,0)
-         * Change (x,y) value as required.
-         */
+
         g.drawImage(fgImage, bgImage.getWidth() - 128, bgImage.getHeight() - 128, null);
 
         g.dispose();
