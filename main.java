@@ -314,14 +314,23 @@ public class main extends ListenerAdapter {
         JSONObject obj = new JSONObject(in);
         JSONArray memes = obj.getJSONObject("data").getJSONArray("memes");
 
+        // GET - get_joke
+        HttpURLConnection url1 = (HttpURLConnection) new URL("https://official-joke-api.appspot.com/random_joke").openConnection();
+        BufferedReader br = new BufferedReader(new InputStreamReader(url1.getInputStream()));
+        String in = br.readLine();
+
+        JSONObject obj = new JSONObject(in);
+        String setup = obj.getString("setup");
+        String punchline = obj.getString("punchline");
+
         //POST - caption_image
         URL url = new URL("https://api.imgflip.com/caption_image");
         Map<String,Object> params = new LinkedHashMap<>();
         params.put("template_id", memes.getJSONObject(Math.floor(Math.random() * memes.length())).getString("id"));
         params.put("username", "whalegoddess");
         params.put("password", "garlicoinmemes");
-        params.put("text0", "top text");
-        params.put("text1", "bottom text");
+        params.put("text0", setup);
+        params.put("text1", punchline);
 
         StringBuilder postData = new StringBuilder();
         for (Map.Entry<String,Object> param : params.entrySet()) {
