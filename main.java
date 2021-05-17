@@ -162,6 +162,15 @@ public class main extends ListenerAdapter {
                     e.printStackTrace();
                 }
                 break;
+            case "meme":
+            case "mememe":
+                try {
+                    meme(event);
+                    return;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                break;
         }
 
         eb.setColor(new Color(242, 201, 76));
@@ -219,6 +228,40 @@ public class main extends ListenerAdapter {
 
         writeImage(overlayedImage, "D:\\grlcfaq\\src\\main\\java\\output.jpg", "JPG");
         event.getMessage().reply("bark!").addFile(new File("D:\\grlcfaq\\src\\main\\java\\output.jpg")).mentionRepliedUser(false).queue();
+    }
+
+
+
+    static void meme(GuildMessageReceivedEvent event) throws IOException {
+        // GET - get_memes
+        HttpURLConnection url = (HttpURLConnection) new URL("https://api.imgflip.com/get_memes/").openConnection();
+        BufferedReader br = new BufferedReader(new InputStreamReader(url.getInputStream()));
+        String in = br.readLine();
+
+        JSONObject obj = new JSONObject(in);
+        String[] memes = obj.getArray("data");
+        String memeUrl = memes[0].getString("url");
+        BufferedImage im = ImageIO.read(new URL(memeUrl));
+
+        //POST - caption_image
+        HttpPost post = new HttpPost("https://api.imgflip.com/caption_image/");
+        NameValuePair[] data = {
+            new NameValuePair("template_id", memes[0].getString("id")),
+            new NameValuePair("username", "whalegoddess"),
+            new NameValuePair("password", "garlicoinmemes"),
+            new NameValuePair("text0", "Top Text"),
+            new NameValuePair("text1", "Bottom Text")
+
+        };
+        post.setRequestBody(data);
+
+        InputStream in = post.getResponseBodyAsStream();
+
+        String[] memes = obj.getArray("data");
+        String memeUrl = memes[0].getString("url");
+
+        writeImage(im, "D:\\grlcfaq\\src\\main\\java\\memeoutput.jpg", "JPG");
+        event.getMessage().reply("Meme!").addFile(new File("D:\\grlcfaq\\src\\main\\java\\memeoutput.jpg")).mentionRepliedUser(false).queue();
     }
 
     public static void writeImage(BufferedImage img, String fileLocation,
