@@ -287,34 +287,50 @@ public class main extends ListenerAdapter {
 
     static void meme(GuildMessageReceivedEvent event) throws IOException {
         // GET - get_memes
-        HttpURLConnection url = (HttpURLConnection) new URL("https://api.imgflip.com/get_memes/").openConnection();
-        BufferedReader br = new BufferedReader(new InputStreamReader(url.getInputStream()));
+        HttpURLConnection url1 = (HttpURLConnection) new URL("https://api.imgflip.com/get_memes/").openConnection();
+        BufferedReader br = new BufferedReader(new InputStreamReader(url1.getInputStream()));
         String in = br.readLine();
 
         JSONObject obj = new JSONObject(in);
-        String[] memes = obj.getArray("data");
-        String memeUrl = memes[0].getString("url");
-        BufferedImage im = ImageIO.read(new URL(memeUrl));
+        JSONArray memes = obj.getJSONObject("data").getJSONArray("memes");
 
         //POST - caption_image
-        HttpPost post = new HttpPost("https://api.imgflip.com/caption_image/");
-        NameValuePair[] data = {
-            new NameValuePair("template_id", memes[0].getString("id")),
-            new NameValuePair("username", "whalegoddess"),
-            new NameValuePair("password", "garlicoinmemes"),
-            new NameValuePair("text0", "Top Text"),
-            new NameValuePair("text1", "Bottom Text")
+        URL url = new URL("https://api.imgflip.com/caption_image");
+        Map<String,Object> params = new LinkedHashMap<>();
+        params.put("template_id", "112126428");
+        params.put("username", "whalegoddess");
+        params.put("password", "garlicoinmemes");
+        params.put("text0", "top text");
+        params.put("text1", "bottom text");
 
-        };
-        post.setRequestBody(data);
+        StringBuilder postData = new StringBuilder();
+        for (Map.Entry<String,Object> param : params.entrySet()) {
+            if (postData.length() != 0) postData.append('&');
+            postData.append(URLEncoder.encode(param.getKey(), "UTF-8"));
+            postData.append('=');
+            postData.append(URLEncoder.encode(String.valueOf(param.getValue()), "UTF-8"));
+        }
+        byte[] postDataBytes = postData.toString().getBytes(StandardCharsets.UTF_8);
 
-        InputStream in = post.getResponseBodyAsStream();
+        HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+        conn.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
+        conn.setDoOutput(true);
+        conn.getOutputStream().write(postDataBytes);
 
-        String[] memes = obj.getArray("data");
-        String memeUrl = memes[0].getString("url");
+        BufferedReader outputreader =  new BufferedReader(new InputStreamReader(conn.getInputStream()));
 
-        writeImage(im, "D:\\grlcfaq\\src\\main\\java\\memeoutput.jpg", "JPG");
-        event.getMessage().reply("Meme!").addFile(new File("D:\\grlcfaq\\src\\main\\java\\memeoutput.jpg")).mentionRepliedUser(false).queue();
+
+        JSONObject finalJSONOutput = new JSONObject(outputreader.readLine()).getJSONObject("data");
+
+        String outurl = finalJSONOutput.getString("url"); // no need to download because i am cool and hip :sunglasses:
+
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("here is your meme");
+        eb.setImage(outurl);
+
+        event.getMessage().reply(eb.build()).mentionRepliedUser(false).queue();
     }
 
     public static void writeImage(BufferedImage img, String fileLocation,
