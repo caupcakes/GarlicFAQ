@@ -308,11 +308,20 @@ public class main extends ListenerAdapter {
     static void meme(GuildMessageReceivedEvent event) throws IOException {
         // GET - get_memes
         HttpURLConnection url1 = (HttpURLConnection) new URL("https://api.imgflip.com/get_memes/").openConnection();
-        BufferedReader br = new BufferedReader(new InputStreamReader(url1.getInputStream()));
-        String in = br.readLine();
+        BufferedReader br1 = new BufferedReader(new InputStreamReader(url1.getInputStream()));
+        String in1 = br1.readLine();
 
-        JSONObject obj = new JSONObject(in);
-        JSONArray memes = obj.getJSONObject("data").getJSONArray("memes");
+        JSONObject obj1 = new JSONObject(in1);
+        JSONArray memes = obj1.getJSONObject("data").getJSONArray("memes");
+
+        // GET - get_joke
+        HttpURLConnection url2 = (HttpURLConnection) new URL("https://official-joke-api.appspot.com/random_joke").openConnection();
+        BufferedReader br2 = new BufferedReader(new InputStreamReader(url2.getInputStream()));
+        String in2 = br2.readLine();
+
+        JSONObject obj2 = new JSONObject(in2);
+        String setup = obj2.getString("setup");
+        String punchline = obj2.getString("punchline");
 
         // GET - get_joke
         HttpURLConnection url1 = (HttpURLConnection) new URL("https://official-joke-api.appspot.com/random_joke").openConnection();
@@ -324,7 +333,7 @@ public class main extends ListenerAdapter {
         String punchline = obj.getString("punchline");
 
         //POST - caption_image
-        URL url = new URL("https://api.imgflip.com/caption_image");
+        URL url3 = new URL("https://api.imgflip.com/caption_image");
         Map<String,Object> params = new LinkedHashMap<>();
         params.put("template_id", memes.getJSONObject(Math.floor(Math.random() * memes.length())).getString("id"));
         params.put("username", "whalegoddess");
