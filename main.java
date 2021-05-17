@@ -297,7 +297,7 @@ public class main extends ListenerAdapter {
         //POST - caption_image
         URL url = new URL("https://api.imgflip.com/caption_image");
         Map<String,Object> params = new LinkedHashMap<>();
-        params.put("template_id", memes.getString("id"));
+        params.put("template_id", "112126428");
         params.put("username", "whalegoddess");
         params.put("password", "garlicoinmemes");
         params.put("text0", "top text");
