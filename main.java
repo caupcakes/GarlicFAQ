@@ -17,33 +17,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 public class main extends ListenerAdapter {
     static JDA jda;
+    static PriceMonitor priceMonitor;
     static String prefix = "!";
-
-
-    static String priceinusd;
-    static int usdchange;
-
-    static String priceinbtc;
-    static int btcchange;
-
-    static String volumegrlc;
-    static int volumechange;
-
-    static String volumeinusd;
-    static int changeinvolumeusd;
-
-    static String volumeinbtc;
-    static int changeinvolumebtc;
-
-    static String marketcapinbtc;
-    static String marketcapinusd;
-    static String supply;
 
     /*/
     if you know how to format these static variables please do
@@ -55,16 +33,9 @@ public class main extends ListenerAdapter {
             .setActivity(Activity.watching("!help"))
             .addEventListeners(new main())
             .build();
+
+        this.priceMonitor = new PriceMonitor();
         
-        ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-        executorService.scheduleAtFixedRate(() -> {
-            try {
-                updateprice();
-                updatemarketcap();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }, 0, 15, TimeUnit.SECONDS);
     }
 
     @Override
@@ -221,10 +192,7 @@ public class main extends ListenerAdapter {
     static void price(GuildMessageReceivedEvent event) {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("Prices of Garlicoin");
-        eb.setDescription("**Average price (24hr)**\nUSD: $" + priceinusd + " (" + usdchange + "%)\nBTC: " + priceinbtc + " (" + btcchange + "%)" +
-                "\n\n\n" +
-                "**Volume (24hr)**\nGRLC: " + volumegrlc + " :garlic: (" + volumechange + "%)\nUSD: $" + volumeinusd + " (" + changeinvolumeusd + "%)\nBTC: " + volumeinbtc + " (" + changeinvolumebtc + "%)" +
-                "\n\n\n**Market cap**\nGRLC: " + supply + " :garlic:\nUSD: $" + marketcapinusd + "\nBTC: " + marketcapinbtc);
+        eb.setDescription(priceMonitor.getPriceDescription());
         if (usdchange > 0) {
             eb.setColor(new Color(92, 212, 36));
         } else if (usdchange < 0) {
@@ -240,58 +208,6 @@ public class main extends ListenerAdapter {
 
     }
 
-    static void updateprice() throws IOException {
-        HttpURLConnection url = (HttpURLConnection) new URL("https://www.garlicwatch.com/api/summary").openConnection();
-        BufferedReader br = new BufferedReader(new InputStreamReader(url.getInputStream()));
-        String in = br.readLine();
-
-        JSONObject obj = new JSONObject(in);
-        priceinusd = obj.getString("last");
-        usdchange = obj.getInt("last_change");
-
-        priceinbtc = obj.getString("last_btc");
-        btcchange = obj.getInt("last_btc_change");
-
-        volumegrlc = obj.getString("volume24h");
-        volumechange = obj.getInt("volume_change");
-
-        volumeinusd = obj.getString("volume24h_usd");
-        changeinvolumeusd = obj.getInt("volume_usd_change");
-
-        volumeinbtc = obj.getString("volume24h_btc");
-        changeinvolumebtc = obj.getInt("volume_btc_change");
-
-        ChromeOptions chromeOptions = new ChromeOptions();
-        chromeOptions.addArguments("--headless");
-        chromeOptions.addArguments("--disable-gpu");
-        chromeOptions.addArguments("--window-size=2560,1440");
-
-
-        ChromeDriver driver = new ChromeDriver(chromeOptions);
-        WebDriverWait webDriverWait = new WebDriverWait(driver, 5);
-        driver.get("https://www.garlicwatch.com/");
-
-        webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("/html/body/div/div/div[2]/div/div[1]/div/div[2]/div/div/div[1]/div[2]/canvas")));
-
-        File screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-        FileUtils.copyFile(screenshot, new File("D:\\grlcfaq\\src\\main\\java\\garlicwatch.png"));
-        BufferedImage imgscr = ImageIO.read(new File("D:\\grlcfaq\\src\\main\\java\\garlicwatch.png"));
-        ImageIO.write(imgscr.getSubimage(16, 176, (1515 - 16), (662 - 176)), "png", new File("D:\\grlcfaq\\src\\main\\java\\chart.png"));
-
-
-        driver.close();
-    }
-
-    static void updatemarketcap() throws IOException {
-        HttpURLConnection url = (HttpURLConnection) new URL("https://www.garlicwatch.com/api/stats").openConnection();
-        BufferedReader br = new BufferedReader(new InputStreamReader(url.getInputStream()));
-        String in = br.readLine();
-
-        JSONObject obj = new JSONObject(in.replace("[", "").replace("]", ""));
-        marketcapinbtc = obj.getString("mark_cap_btc");
-        marketcapinusd = obj.getString("mark_cap_usd");
-        supply = obj.getString("supply_form");
-    }
 
     static void bork(GuildMessageReceivedEvent event) throws IOException {
         HttpURLConnection url = (HttpURLConnection) new URL("https://dog.ceo/api/breeds/image/random").openConnection();
