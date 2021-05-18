@@ -1,8 +1,14 @@
+import org.apache.commons.io.FileUtils;
 import org.json.JSONObject;
+import org.openqa.selenium.By;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import javax.imageio.ImageIO;
-import javax.security.auth.login.LoginException;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
@@ -18,9 +24,9 @@ public class PriceMonitor {
     final ScheduledExecutorService executorService;
 
     // source URL and path for Summary data
-    final String source = "https://www.garlicwatch.com/";
-    final String summaryUrl = source + "api/summary";
-    final String marketCapUrl = source + "api/stats";
+    final static String source = "https://www.garlicwatch.com/";
+    final static String summaryUrl = source + "api/summary";
+    final static String marketCapUrl = source + "api/stats";
 
 
     //Price variables, printed in getPriceDescription()
@@ -42,7 +48,7 @@ public class PriceMonitor {
     static String marketcapinbtc;
     static String marketcapinusd;
     static String supply;
-    
+
 
     public PriceMonitor() {
         this.executorService = Executors.newSingleThreadScheduledExecutor();
@@ -80,7 +86,7 @@ public class PriceMonitor {
         changeinvolumebtc = obj.getInt("volume_btc_change");
 
     }
-    private static void writeImage() {
+    private static void writeImage() throws IOException {
 
         ChromeOptions chromeOptions = new ChromeOptions();
         chromeOptions.addArguments("--headless");
@@ -119,5 +125,9 @@ public class PriceMonitor {
                 "\n\n\n" +
                 "**Volume (24hr)**\nGRLC: " + volumegrlc + " :garlic: (" + volumechange + "%)\nUSD: $" + volumeinusd + " (" + changeinvolumeusd + "%)\nBTC: " + volumeinbtc + " (" + changeinvolumebtc + "%)" +
                 "\n\n\n**Market cap**\nGRLC: " + supply + " :garlic:\nUSD: $" + marketcapinusd + "\nBTC: " + marketcapinbtc;
+    }
+
+    public static int getusdchange(){
+        return usdchange;
     }
 }
