@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.GatewayIntent;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.imageio.ImageIO;
@@ -17,6 +18,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class main extends ListenerAdapter {
     static JDA jda;
@@ -29,13 +34,13 @@ public class main extends ListenerAdapter {
 
     public static void main(String[] args) throws LoginException {
         jda = JDABuilder.createDefault("your token here")
-            .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES)
-            .setActivity(Activity.watching("!help"))
-            .addEventListeners(new main())
-            .build();
+                .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES)
+                .setActivity(Activity.watching("!help"))
+                .addEventListeners(new main())
+                .build();
 
-        this.priceMonitor = new PriceMonitor();
-        
+        priceMonitor = new PriceMonitor();
+
     }
 
     @Override
@@ -193,9 +198,9 @@ public class main extends ListenerAdapter {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("Prices of Garlicoin");
         eb.setDescription(priceMonitor.getPriceDescription());
-        if (usdchange > 0) {
+        if (PriceMonitor.getusdchange() > 0) {
             eb.setColor(new Color(92, 212, 36));
-        } else if (usdchange < 0) {
+        } else if (PriceMonitor.getusdchange() < 0) {
             eb.setColor(new Color(212, 48, 36));
         }
 
