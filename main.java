@@ -1,3 +1,4 @@
+import io.github.cdimascio.dotenv.Dotenv;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -33,7 +34,11 @@ public class main extends ListenerAdapter {
      */
 
     public static void main(String[] args) throws LoginException {
-        jda = JDABuilder.createDefault("your token here")
+        Dotenv dotenv = Dotenv.configure()
+                .directory("D:\\grlcfaq\\src\\main\\java\\")
+                .load();
+
+        jda = JDABuilder.createDefault(dotenv.get("token"))
                 .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES)
                 .setActivity(Activity.watching("!help"))
                 .addEventListeners(new main())
