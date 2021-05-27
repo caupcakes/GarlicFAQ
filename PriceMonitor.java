@@ -23,11 +23,13 @@ import java.util.concurrent.TimeUnit;
 public class PriceMonitor {
     final ScheduledExecutorService executorService;
 
+    static ChromeDriver driver;
+    static WebDriverWait webDriverWait;
+
     // source URL and path for Summary data
     final static String source = "https://www.garlicwatch.com/";
     final static String summaryUrl = source + "api/summary";
     final static String marketCapUrl = source + "api/stats";
-
 
     //Price variables, printed in getPriceDescription()
     static String priceinusd;
@@ -51,6 +53,15 @@ public class PriceMonitor {
 
 
     public PriceMonitor() {
+        ChromeOptions chromeOptions = new ChromeOptions();
+        chromeOptions.addArguments("--headless");
+        chromeOptions.addArguments("--disable-gpu");
+        chromeOptions.addArguments("--window-size=2560,1440");
+
+        driver = new ChromeDriver(chromeOptions);
+
+        webDriverWait = new WebDriverWait(driver, 5);
+
         this.executorService = Executors.newSingleThreadScheduledExecutor();
         executorService.scheduleAtFixedRate(() -> {
             try {
@@ -87,15 +98,6 @@ public class PriceMonitor {
 
     }
     private static void writeImage() throws IOException {
-
-        ChromeOptions chromeOptions = new ChromeOptions();
-        chromeOptions.addArguments("--headless");
-        chromeOptions.addArguments("--disable-gpu");
-        chromeOptions.addArguments("--window-size=2560,1440");
-
-
-        ChromeDriver driver = new ChromeDriver(chromeOptions);
-        WebDriverWait webDriverWait = new WebDriverWait(driver, 5);
         driver.get(source);
 
         webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("/html/body/div/div/div[2]/div/div[1]/div/div[2]/div/div/div[1]/div[2]/canvas")));
