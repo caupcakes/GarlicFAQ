@@ -79,7 +79,8 @@ public class main extends ListenerAdapter {
                         "[Garlium](https://xske.github.io/garlium/) for more info, check **!garlium**\n" +
                         "[Web wallet](https://grlc.eu/!w/) for more info, check **!webwallet**\n" +
                         "Paper wallet -- entirely offline for more info, check **!paperwallet**\n" +
-                        "Mobile Wallet coming soon (Q2 2021)!\n\n[Read more](https://garlic.wiki/)");
+                        "[Android wallet](https://play.google.com/store/apps/details?id=com.garlicwallet)**\n" +
+                        "IOS Wallet coming soon (Q2 2021)!\n\n[Read more](https://garlic.wiki/)");
                 break;
 
             case "whatis":
