@@ -13,14 +13,12 @@ import javax.imageio.ImageIO;
 import javax.security.auth.login.LoginException;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -28,15 +26,19 @@ public class main extends ListenerAdapter {
     static JDA jda;
     static PriceMonitor priceMonitor;
     static String prefix = "!";
-
+    static Map<String, String> faq;
     /*/
     if you know how to format these static variables please do
      */
 
-    public static void main(String[] args) throws LoginException {
+    public static void main(String[] args) throws LoginException, FileNotFoundException {
         Dotenv dotenv = Dotenv.configure()
                 .directory("D:\\grlcfaq\\src\\main\\java\\")
                 .load();
+        faq = new HashMap<>();
+
+//        BufferedReader br = new BufferedReader(new FileReader("D:\\grlcfaq\\src\\main\\java\\faq.txt"));
+
 
         jda = JDABuilder.createDefault(dotenv.get("token"))
                 .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES)
@@ -45,7 +47,6 @@ public class main extends ListenerAdapter {
                 .build();
 
         priceMonitor = new PriceMonitor();
-
     }
 
     @Override
@@ -59,10 +60,6 @@ public class main extends ListenerAdapter {
         EmbedBuilder eb = new EmbedBuilder();
 
         switch (message) {
-            case "price":
-                price(event);
-                return;
-
             case "help":
                 eb.setTitle("Help");
                 eb.setDescription("I am a meaningful and well architected FAQ Bot hosted on some person’s computer.\n" +
@@ -79,7 +76,7 @@ public class main extends ListenerAdapter {
                         "[Garlium](https://xske.github.io/garlium/) for more info, check **!garlium**\n" +
                         "[Web wallet](https://grlc.eu/!w/) for more info, check **!webwallet**\n" +
                         "Paper wallet -- entirely offline for more info, check **!paperwallet**\n" +
-                        "[Android wallet](https://play.google.com/store/apps/details?id=com.garlicwallet)**\n" +
+                        "[Android wallet](https://play.google.com/store/apps/details?id=com.garlicwallet)\n" +
                         "IOS Wallet coming soon (Q2 2021)!\n\n[Read more](https://garlic.wiki/)");
                 break;
 
@@ -184,16 +181,18 @@ public class main extends ListenerAdapter {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                break;
+                return;
             case "meme":
             case "mememe":
                 try {
                     meme(event);
-                    return;
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                break;
+                return;
+            case "price":
+                price(event);
+                return;
         }
 
         eb.setColor(new Color(242, 201, 76));
@@ -210,12 +209,8 @@ public class main extends ListenerAdapter {
             eb.setColor(new Color(212, 48, 36));
         }
 
-        jda.retrieveUserById(424761268419952641L).complete().openPrivateChannel().queue((TextChannel) -> {
-            TextChannel.sendFile(new File("D:\\grlcfaq\\src\\main\\java\\chart.png")).queue((Message) -> {
-                eb.setImage(Message.getAttachments().get(0).getProxyUrl());
-                event.getMessage().reply(eb.build()).mentionRepliedUser(false).queue();
-            });
-        });
+        eb.setImage("attachment://price.png");
+        event.getMessage().reply(eb.build()).addFile(new File("D:\\grlcfaq\\src\\main\\java\\img\\chart.png"), "price.png").queue();
 
     }
 
@@ -227,13 +222,18 @@ public class main extends ListenerAdapter {
 
         JSONObject obj = new JSONObject(in);
         String dog_img = obj.getString("message");
-        BufferedImage im = ImageIO.read(new File("D:\\grlcfaq\\src\\main\\java\\garlicoin.png"));
+        BufferedImage im = ImageIO.read(new File("D:\\grlcfaq\\src\\main\\java\\img\\garlicoin.png"));
         BufferedImage im2 = ImageIO.read(new URL(dog_img));
         BufferedImage overlayedImage = overlayImages(im2, im);
 
 
-        writeImage(overlayedImage, "D:\\grlcfaq\\src\\main\\java\\output.jpg", "JPG");
-        event.getMessage().reply("bark!").addFile(new File("D:\\grlcfaq\\src\\main\\java\\output.jpg")).mentionRepliedUser(false).queue();
+        writeImage(overlayedImage, "D:\\grlcfaq\\src\\main\\java\\img\\output.jpg", "JPG");
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("here!");
+        eb.setImage("attachment://bork.jpg");
+        event.getChannel().sendMessage(eb.build())
+                .addFile(new File("D:\\grlcfaq\\src\\main\\java\\img\\output.jpg"), "bork.jpg")
+                .queue();
     }
 
 
