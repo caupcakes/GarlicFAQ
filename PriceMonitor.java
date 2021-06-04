@@ -21,8 +21,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class PriceMonitor {
-    final ScheduledExecutorService executorService;
-
     static ChromeDriver driver;
     static WebDriverWait webDriverWait;
 
@@ -53,25 +51,29 @@ public class PriceMonitor {
 
 
     public PriceMonitor() {
+        System.setProperty("webdriver.chrome.driver", "C:\\Users\\Jeremy\\Downloads\\chromedriver_win32 (2)\\chromedriver.exe");
+
         ChromeOptions chromeOptions = new ChromeOptions();
-        chromeOptions.addArguments("--headless");
         chromeOptions.addArguments("--disable-gpu");
         chromeOptions.addArguments("--window-size=2560,1440");
+        chromeOptions.addArguments("--headless");
 
         driver = new ChromeDriver(chromeOptions);
 
+        driver.get(source);
+
         webDriverWait = new WebDriverWait(driver, 5);
 
-        this.executorService = Executors.newSingleThreadScheduledExecutor();
+        ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
         executorService.scheduleAtFixedRate(() -> {
             try {
                 updateprice();
                 updatemarketcap();
-                writeImage();
+                writeImages();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }, 0, 15, TimeUnit.SECONDS);
+        }, 0, 15, TimeUnit.SECONDS); // we can use 15s because the browser is open so requests are being made automatically.
     }
 
 
@@ -97,18 +99,19 @@ public class PriceMonitor {
         changeinvolumebtc = obj.getInt("volume_btc_change");
 
     }
-    private static void writeImage() throws IOException {
-        driver.get(source);
 
+    private static void writeImages() throws IOException {
         webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("/html/body/div/div/div[2]/div/div[1]/div/div[2]/div/div/div[1]/div[2]/canvas")));
 
         File screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-        FileUtils.copyFile(screenshot, new File("D:\\grlcfaq\\src\\main\\java\\garlicwatch.png"));
-        BufferedImage imgscr = ImageIO.read(new File("D:\\grlcfaq\\src\\main\\java\\garlicwatch.png"));
-        ImageIO.write(imgscr.getSubimage(16, 176, (1515 - 16), (662 - 176)), "png", new File("D:\\grlcfaq\\src\\main\\java\\chart.png"));
+        FileUtils.copyFile(screenshot, new File("D:\\grlcfaq\\src\\main\\java\\img\\garlicwatch.png"));
 
+        getImage(16, 184, 1506, 713, "D:\\grlcfaq\\src\\main\\java\\img\\chart.png");
+    }
 
-        driver.close();
+    private static void getImage(int startx, int starty, int stopx, int stopy, String filepath) throws IOException {
+        BufferedImage imgscr = ImageIO.read(new File("D:\\grlcfaq\\src\\main\\java\\img\\garlicwatch.png"));
+        ImageIO.write(imgscr.getSubimage(startx, starty, (stopx - startx), (stopy - starty)), "png", new File(filepath));
     }
 
     private static void updatemarketcap() throws IOException {
@@ -129,7 +132,7 @@ public class PriceMonitor {
                 "\n\n\n**Market cap**\nGRLC: " + supply + " :garlic:\nUSD: $" + marketcapinusd + "\nBTC: " + marketcapinbtc;
     }
 
-    public static int getusdchange(){
+    public static int getusdchange() {
         return usdchange;
     }
 }
